@@ -49,5 +49,16 @@ jobs:
           id: login-aws-ecr
           uses: aws-actions/amazon-ecr-login@v2
 
-        - name: Echo
-          run: echo ${{ steps.login-aws-ecr.outputs.registry }}
+        # SSM command docs https://awscli.amazonaws.com/v2/documentation/api/latest/reference/ssm/index.html#cli-aws-ssm
+        - name: Deploy to EC2
+          run: |
+            command_id=$(aws ssm send-command \
+            --document-name "AWS-RunShellScript" \
+            --targets "Key=instanceIds,Values=i-0b63033fd4f7e8000,i-0fdeb93a778f62d37" \
+            --comment "Pull Docker image and run in" \
+            --parameters commands='[
+              "aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-aws-ecr.outputs.registry }}"
+            ]')
+
+            echo "$command_id"
+            
