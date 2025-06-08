@@ -11,7 +11,7 @@ jobs:
     steps:
         # Recommended action versions found from https://github.com/aws-actions/amazon-ecr-login  
         - name: Checkout
-          uses: actions/checkout@v2    
+          uses: actions/checkout@v3    
           
         - name: Configure AWS Credentials
           uses: aws-actions/configure-aws-credentials@v4
@@ -65,7 +65,11 @@ jobs:
 
             aws ssm wait command-executed \
             --command-id $command_id \
-            --instance-id ${{ secrets.INSTANCE_ID_1 }} || true
+            --instance-id ${{ secrets.INSTANCE_ID_1 }}
+
+            aws ssm wait command-executed \
+            --command-id $command_id \
+            --instance-id ${{ secrets.INSTANCE_ID_2 }}
 
             status=$(aws ssm list-commands --command-id $command_id --query "Commands[0].StatusDetails" --output text)
             
